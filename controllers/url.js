@@ -16,7 +16,7 @@ async function handleGenerateNewShortURL(req, res) {
   return res.json({ id: shortID });
 }
 
-// 🔥 Naya Logic: URL dhundna aur Redirect karna
+// 🔥 Purana Logic: URL dhundna aur Redirect karna
 async function handleGetAnalyticsAndRedirect(req, res) {
   const shortId = req.params.shortId;
   
@@ -34,7 +34,21 @@ async function handleGetAnalyticsAndRedirect(req, res) {
   res.redirect(entry.redirectURL);
 }
 
+// 🔥 Naya Logic: Analytics dekhne ke liye (Kitne clicks hue)
+async function handleGetAnalytics(req, res) {
+  const shortId = req.params.shortId;
+  const result = await URL.findOne({ shortId });
+  
+  if (!result) return res.status(404).json({ error: "URL not found" });
+
+  return res.json({
+    totalClicks: result.visitHistory.length,
+    analytics: result.visitHistory,
+  });
+}
+
 module.exports = {
   handleGenerateNewShortURL,
-  handleGetAnalyticsAndRedirect, // Naye function ko export kar diya
+  handleGetAnalyticsAndRedirect,
+  handleGetAnalytics, // 👈 Is naye function ko export kar diya
 };
