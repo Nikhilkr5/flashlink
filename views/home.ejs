@@ -8,12 +8,21 @@
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
         input { padding: 10px; width: 300px; font-size: 16px; }
         button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; }
+        /* Naye dabbe ka style */
+        .result { margin-top: 20px; padding: 15px; background-color: #e9ecef; display: inline-block; border-radius: 5px; }
     </style>
 </head>
 <body>
     <h1>🔗 FlashLink URL Shortener</h1>
     
-    <div>
+    <% if (locals.id) { %>
+        <div class="result">
+            <p><strong>Success! Short URL Generated:</strong></p>
+            <a href="http://localhost:8001/<%= id %>" target="_blank">http://localhost:8001/<%= id %></a>
+        </div>
+    <% } %>
+
+    <div style="margin-top: 30px;">
         <form action="/url" method="POST">
             <label>Enter Your Original URL:</label><br><br>
             <input type="text" name="url" placeholder="https://example.com" required>

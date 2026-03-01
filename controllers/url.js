@@ -13,7 +13,10 @@ async function handleGenerateNewShortURL(req, res) {
     visitHistory: [],
   });
   
-  return res.json({ id: shortID });
+  // 🔥 JSON hataya, UI render lagaya! Sath me 'id' bhej di.
+  return res.render("home", {
+    id: shortID,
+  });
 }
 
 // 🔥 Purana Logic: URL dhundna aur Redirect karna
