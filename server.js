@@ -1,10 +1,9 @@
 const express = require("express");
+const path = require("path"); // 🔥 Naya import
 require("dotenv").config();
 const { connectToMongoDB } = require("./connection");
 const urlRoute = require("./routes/url");
-
-// Apne naye controller logic ko yahan import kiya
-const { handleGetAnalyticsAndRedirect } = require("./controllers/url"); 
+const { handleGetAnalyticsAndRedirect } = require("./controllers/url");
 
 const app = express();
 const PORT = process.env.PORT || 8001;
@@ -14,13 +13,23 @@ connectToMongoDB(MONGO_URL)
   .then(() => console.log("MongoDB Connected Successfully!"))
   .catch((err) => console.log("Mongo Error: ", err));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// 🔥 EJS Setup (Piyush Garg style SSR)
+app.set("view engine", "ejs");
+app.set("views", path.resolve("./views"));
 
-// POST request yahan jayegi (Short ID banne ke liye)
+// Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: false })); // Form data parse karne ke liye
+
+// Routes
 app.use("/url", urlRoute);
 
-// GET request yahan aayegi (Redirect hone ke liye)
+// 🔥 Homepage Route (UI dikhane ke liye)
+app.get("/", (req, res) => {
+  return res.render("home"); // Yeh 'home.ejs' file ko dhundega
+});
+
+// Redirect Route
 app.get("/:shortId", handleGetAnalyticsAndRedirect);
 
 app.listen(PORT, () => {
