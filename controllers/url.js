@@ -13,13 +13,24 @@ async function handleGenerateNewShortURL(req, res) {
     visitHistory: [],
   });
   
-  // 🔥 JSON hataya, UI render lagaya! Sath me 'id' bhej di.
+  // 🔥 PRO UPDATE: Naya link banne ke baad saare URLs latest-first order me fetch karo
+  const allUrls = await URL.find({}).sort({ _id: -1 });
+  
   return res.render("home", {
     id: shortID,
+    urls: allUrls, 
   });
 }
 
-// 🔥 Purana Logic: URL dhundna aur Redirect karna
+// 🔥 Naya Pro Logic: Homepage render karne ke liye (Table dikhane ke liye)
+async function handleGetHomePage(req, res) {
+  // 🔥 PRO UPDATE: Yahan bhi table ke data ko latest-first order me fetch kiya
+  const allUrls = await URL.find({}).sort({ _id: -1 });
+  return res.render("home", {
+    urls: allUrls,
+  });
+}
+
 async function handleGetAnalyticsAndRedirect(req, res) {
   const shortId = req.params.shortId;
   
@@ -33,17 +44,13 @@ async function handleGetAnalyticsAndRedirect(req, res) {
   );
 
   if (!entry) return res.status(404).send("URL not found!");
-  
   res.redirect(entry.redirectURL);
 }
 
-// 🔥 Naya Logic: Analytics dekhne ke liye (Kitne clicks hue)
 async function handleGetAnalytics(req, res) {
   const shortId = req.params.shortId;
   const result = await URL.findOne({ shortId });
-  
   if (!result) return res.status(404).json({ error: "URL not found" });
-
   return res.json({
     totalClicks: result.visitHistory.length,
     analytics: result.visitHistory,
@@ -53,5 +60,6 @@ async function handleGetAnalytics(req, res) {
 module.exports = {
   handleGenerateNewShortURL,
   handleGetAnalyticsAndRedirect,
-  handleGetAnalytics, // 👈 Is naye function ko export kar diya
+  handleGetAnalytics,
+  handleGetHomePage, 
 };
