@@ -1,5 +1,6 @@
 const { nanoid } = require("nanoid");
 const URL = require("../models/url");
+const QRCode = require("qrcode"); // 🔥 QR Code library import ki
 
 async function handleGenerateNewShortURL(req, res) {
   const body = req.body;
@@ -8,14 +9,13 @@ async function handleGenerateNewShortURL(req, res) {
   
   let shortID;
 
-  // 🔥 PRO UPDATE: Custom Alias Logic
+  // Custom Alias Logic
   if (body.customAlias) {
       shortID = body.customAlias;
       
       // Check if this custom alias is already taken
       const existingURL = await URL.findOne({ shortId: shortID });
       if (existingURL) {
-          // Agar taken hai, toh table data ke sath error message bhej do
           const allUrls = await URL.find({}).sort({ _id: -1 });
           return res.render("home", {
               error: "This custom alias is already taken. Please try another one!",
@@ -23,7 +23,6 @@ async function handleGenerateNewShortURL(req, res) {
           });
       }
   } else {
-      // Agar user ne custom alias nahi diya, toh pehle ki tarah nanoid generate karo
       shortID = nanoid(8);
   }
   
@@ -33,18 +32,24 @@ async function handleGenerateNewShortURL(req, res) {
     visitHistory: [],
   });
   
-  // 🔥 PRO UPDATE: Naya link banne ke baad saare URLs latest-first order me fetch karo
+  // Naya link banne ke baad latest-first order me fetch karo
   const allUrls = await URL.find({}).sort({ _id: -1 });
+  
+  // 🔥 MENTOR'S PRO TIP: Dynamic URL generation (Localhost aur Render dono pe chalega)
+  const fullShortUrl = `${req.protocol}://${req.get("host")}/${shortID}`;
+  
+  // 🔥 URL ko QR Code image (Base64) mein convert kiya
+  const qrImage = await QRCode.toDataURL(fullShortUrl); 
   
   return res.render("home", {
     id: shortID,
+    qrCode: qrImage, // Frontend ko image bhej di
     urls: allUrls, 
+    host: `${req.protocol}://${req.get("host")}` // Dynamic host for display
   });
 }
 
-// 🔥 Naya Pro Logic: Homepage render karne ke liye (Table dikhane ke liye)
 async function handleGetHomePage(req, res) {
-  // 🔥 PRO UPDATE: Yahan bhi table ke data ko latest-first order me fetch kiya
   const allUrls = await URL.find({}).sort({ _id: -1 });
   return res.render("home", {
     urls: allUrls,

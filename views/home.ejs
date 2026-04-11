@@ -5,65 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlashLink - URL Shortener</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        input { padding: 10px; width: 300px; font-size: 16px; margin-bottom: 10px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; margin-top: 10px; }
-        .result { margin-top: 20px; padding: 15px; background-color: #e9ecef; display: inline-block; border-radius: 5px; }
-        .error-msg { margin-top: 20px; padding: 15px; background-color: #ffe6e6; color: #d93025; display: inline-block; border-radius: 5px; font-weight: bold; border: 1px solid #d93025;}
-        table { margin: 40px auto; border-collapse: collapse; width: 80%; text-align: left; }
-        th, td { padding: 12px; border: 1px solid #ddd; }
-        th { background-color: #f2f2f2; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f7f6; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        input { padding: 12px; width: 80%; max-width: 400px; font-size: 16px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 6px; }
+        button { padding: 12px 25px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 6px; transition: 0.3s; }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; padding: 20px; background-color: #e9f5ff; border-radius: 8px; border: 1px solid #b3d7ff; }
+        .error-msg { margin-top: 20px; padding: 15px; background-color: #ffe6e6; color: #d93025; border-radius: 8px; font-weight: bold; border: 1px solid #f5c2c7;}
+        table { margin: 40px auto; border-collapse: collapse; width: 100%; background: white; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; border: 1px solid #eee; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .qr-section { margin-top: 15px; }
+        .qr-section img { border: 1px solid #ddd; padding: 5px; background: white; border-radius: 4px; }
     </style>
 </head>
 <body>
-    <h1>🔗 FlashLink URL Shortener</h1>
-    
-    <% if (locals.error) { %>
-        <div class="error-msg">
-            <%= locals.error %>
+    <div class="container">
+        <h1>🔗 FlashLink URL Shortener</h1>
+        
+        <% if (locals.error) { %>
+            <div class="error-msg"><%= locals.error %></div>
+        <% } %>
+
+        <% if (locals.id && locals.qrCode) { %>
+            <div class="result">
+                <p><strong>Success! Short URL Generated:</strong></p>
+                <a href="/<%= id %>" target="_blank" style="font-size: 18px; font-weight: bold; color: #007bff;">
+                    <%= locals.host %>/<%= id %>
+                </a>
+                
+                <div class="qr-section">
+                    <img src="<%= qrCode %>" alt="QR Code" width="150">
+                    <br>
+                    <a href="<%= qrCode %>" download="FlashLink_QR_<%= id %>.png" style="display: inline-block; margin-top: 10px; font-size: 14px; color: #28a745; text-decoration: none; font-weight: bold;">
+                        ⬇️ Download QR Code
+                    </a>
+                </div>
+            </div>
+        <% } %>
+
+        <div style="margin-top: 30px;">
+            <form action="/url" method="POST">
+                <label style="font-weight: bold;">Enter Your Original URL:</label><br>
+                <input type="text" name="url" placeholder="https://example.com" required><br>
+                
+                <label style="font-weight: bold;">Custom Alias (Optional):</label><br>
+                <input type="text" name="customAlias" placeholder="e.g., nikhil-resume" pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens allowed"><br>
+
+                <button type="submit">Shorten & Generate QR</button>
+            </form>
         </div>
-    <% } %>
 
-    <% if (locals.id) { %>
-        <div class="result">
-            <p><strong>Success! Short URL Generated:</strong></p>
-            <a href="https://flashlink.onrender.com/<%= id %>" target="_blank">https://flashlink.onrender.com/<%= id %></a>
-        </div>
-    <% } %>
-
-    <div style="margin-top: 30px;">
-        <form action="/url" method="POST">
-            <label style="font-weight: bold;">Enter Your Original URL:</label><br>
-            <input type="text" name="url" placeholder="https://example.com" required><br>
-            
-            <label style="font-weight: bold;">Custom Alias (Optional):</label><br>
-            <input type="text" name="customAlias" placeholder="e.g., nikhil-resume" pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens allowed"><br>
-
-            <button type="submit">Shorten</button>
-        </form>
-    </div>
-
-    <% if (locals.urls && locals.urls.length > 0) { %>
-        <table>
-            <thead>
-                <tr>
-                    <th>S. No</th>
-                    <th>Short ID</th>
-                    <th>Original Link</th>
-                    <th>Total Clicks</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% urls.forEach((url, index) => { %>
+        <% if (locals.urls && locals.urls.length > 0) { %>
+            <table>
+                <thead>
                     <tr>
-                        <td><%= index + 1 %></td>
-                        <td><%= url.shortId %></td>
-                        <td style="word-break: break-all;"><%= url.redirectURL %></td>
-                        <td style="font-weight: bold; text-align: center;"><%= url.visitHistory.length %></td>
+                        <th>S. No</th>
+                        <th>Short ID</th>
+                        <th>Original Link</th>
+                        <th>Clicks</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
-    <% } %>
+                </thead>
+                <tbody>
+                    <% urls.forEach((url, index) => { %>
+                        <tr>
+                            <td><%= index + 1 %></td>
+                            <td><a href="/<%= url.shortId %>" target="_blank"><%= url.shortId %></a></td>
+                            <td style="word-break: break-all; max-width: 300px;"><%= url.redirectURL %></td>
+                            <td style="font-weight: bold; text-align: center;"><%= url.visitHistory.length %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } %>
+    </div>
 </body>
 </html>
