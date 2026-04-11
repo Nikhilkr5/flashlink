@@ -6,9 +6,10 @@
     <title>FlashLink - URL Shortener</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-        input { padding: 10px; width: 300px; font-size: 16px; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; }
+        input { padding: 10px; width: 300px; font-size: 16px; margin-bottom: 10px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #007bff; color: white; border: none; margin-top: 10px; }
         .result { margin-top: 20px; padding: 15px; background-color: #e9ecef; display: inline-block; border-radius: 5px; }
+        .error-msg { margin-top: 20px; padding: 15px; background-color: #ffe6e6; color: #d93025; display: inline-block; border-radius: 5px; font-weight: bold; border: 1px solid #d93025;}
         table { margin: 40px auto; border-collapse: collapse; width: 80%; text-align: left; }
         th, td { padding: 12px; border: 1px solid #ddd; }
         th { background-color: #f2f2f2; }
@@ -17,6 +18,12 @@
 <body>
     <h1>🔗 FlashLink URL Shortener</h1>
     
+    <% if (locals.error) { %>
+        <div class="error-msg">
+            <%= locals.error %>
+        </div>
+    <% } %>
+
     <% if (locals.id) { %>
         <div class="result">
             <p><strong>Success! Short URL Generated:</strong></p>
@@ -26,8 +33,12 @@
 
     <div style="margin-top: 30px;">
         <form action="/url" method="POST">
-            <label>Enter Your Original URL:</label><br><br>
-            <input type="text" name="url" placeholder="https://example.com" required>
+            <label style="font-weight: bold;">Enter Your Original URL:</label><br>
+            <input type="text" name="url" placeholder="https://example.com" required><br>
+            
+            <label style="font-weight: bold;">Custom Alias (Optional):</label><br>
+            <input type="text" name="customAlias" placeholder="e.g., nikhil-resume" pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens allowed"><br>
+
             <button type="submit">Shorten</button>
         </form>
     </div>

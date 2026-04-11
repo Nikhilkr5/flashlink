@@ -3,9 +3,29 @@ const URL = require("../models/url");
 
 async function handleGenerateNewShortURL(req, res) {
   const body = req.body;
+  
   if (!body.url) return res.status(400).json({ error: "url is required" });
   
-  const shortID = nanoid(8);
+  let shortID;
+
+  // 🔥 PRO UPDATE: Custom Alias Logic
+  if (body.customAlias) {
+      shortID = body.customAlias;
+      
+      // Check if this custom alias is already taken
+      const existingURL = await URL.findOne({ shortId: shortID });
+      if (existingURL) {
+          // Agar taken hai, toh table data ke sath error message bhej do
+          const allUrls = await URL.find({}).sort({ _id: -1 });
+          return res.render("home", {
+              error: "This custom alias is already taken. Please try another one!",
+              urls: allUrls
+          });
+      }
+  } else {
+      // Agar user ne custom alias nahi diya, toh pehle ki tarah nanoid generate karo
+      shortID = nanoid(8);
+  }
   
   await URL.create({
     shortId: shortID,

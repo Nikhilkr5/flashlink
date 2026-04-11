@@ -4,7 +4,9 @@ require("dotenv").config();
 const { connectToMongoDB } = require("./connection");
 const urlRoute = require("./routes/url");
 
-// Apne naye controller ko yahan import kiya
+// 🔥 1. Package Import kiya
+const rateLimit = require("express-rate-limit"); 
+
 const { handleGetAnalyticsAndRedirect, handleGetHomePage } = require("./controllers/url"); 
 
 const app = express();
@@ -21,12 +23,21 @@ app.set("views", path.resolve("./views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// 🔥 2. Rate Limiter ka rule banaya
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes ka time window
+    max: 20, // TESTING KE LIYE 3 RAKHA HAI. (Baad me isko 20-50 kar dena)
+    message: "Too many requests from this IP, please try again after 15 minutes.",
+    standardHeaders: true, 
+    legacyHeaders: false,
+});
+
 // Routes
-app.use("/url", urlRoute);
+// 🔥 3. Limiter ko specifically sirf '/url' par lagaya (jahan naye links bante hain)
+app.use("/url", limiter, urlRoute);
 
-// 🔥 Naya Clean Route! Homepage load hote hi table ka data aayega
+// Homepage and Redirect Routes
 app.get("/", handleGetHomePage);
-
 app.get("/:shortId", handleGetAnalyticsAndRedirect);
 
 app.listen(PORT, () => {
